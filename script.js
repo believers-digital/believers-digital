@@ -1,64 +1,60 @@
-const menuBtn = document.querySelector(".menu-btn");
-const navLinks = document.querySelector(".nav-links");
+// Shared interactions for Believers Digital
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.querySelector(".menu-toggle");
+  const nav = document.querySelector(".nav-links");
+  if (toggle && nav) {
+    toggle.addEventListener("click", () => {
+      const open = nav.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+    });
+    nav.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+      nav.classList.remove("open");
+      toggle.setAttribute("aria-expanded", "false");
+    }));
+  }
 
-if (menuBtn) {
-  menuBtn.addEventListener("click", () => {
-    navLinks.classList.toggle("show");
+  const current = location.pathname.split("/").pop() || "index.html";
+  document.querySelectorAll(".nav-links a").forEach(link => {
+    const target = (link.getAttribute("href") || "").split("/").pop();
+    if (target === current) link.classList.add("active");
   });
-}
 
-document.querySelectorAll(".nav-links a").forEach(link => {
-  link.addEventListener("click", () => {
-    navLinks.classList.remove("show");
-  });
-});
+  const items = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    items.forEach(item => observer.observe(item));
+  } else {
+    items.forEach(item => item.classList.add("visible"));
+  }
 
-const revealElements = document.querySelectorAll(".reveal");
+  // Contact form opens WhatsApp with the visitor's prepared message.
+  const form = document.querySelector("#contactForm");
+  if (form) {
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const data = new FormData(form);
+      const message = [
+        "Hello Believers Digital,",
+        "",
+        `My name is: ${data.get("name")}`,
+        `Email: ${data.get("email")}`,
+        `Service: ${data.get("service")}`,
+        `Message: ${data.get("message")}`
+      ].join("\\n");
+      const url = "https://wa.me/2349150859801?text=" + encodeURIComponent(message);
+      window.open(url, "_blank", "noopener,noreferrer");
+    });
+  }
 
-function revealOnScroll() {
-  revealElements.forEach(element => {
-    const top = element.getBoundingClientRect().top;
-
-    if (top < window.innerHeight - 80) {
-      element.classList.add("active");
-    }
-  });
-}
-
-window.addEventListener("scroll", revealOnScroll);
-revealOnScroll();
-
-/* CONTACT FORM TO WHATSAPP */
-
-const contactForm = document.getElementById("contactForm");
-
-if (contactForm) {
-  contactForm.addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const service = document.getElementById("service").value;
-    const message = document.getElementById("message").value;
-
-    const text =
-`Hello Believers Digital,
-
-My name is ${name}.
-Phone: ${phone}
-Service: ${service}
-
-${message}`;
-
-    const whatsappURL =
-      `https://wa.me/2349150859801?text=${encodeURIComponent(text)}`;
-
-    window.open(whatsappURL, "_blank");
-  });
-}
-
-/* COPYRIGHT YEAR */
-
-document.querySelectorAll(".year").forEach(el => {
-  el.textContent = new Date().getFullYear();
+  const year = document.querySelector("[data-year]");
+  if (year) year.textContent = new Date().getFullYear();
 });
